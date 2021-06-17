@@ -74,6 +74,14 @@ class Assigner(commands.Cog):
             if self.roles[f"Role{x}"]["active"] is False:
                 self.bot.remove_command(f"role{x}")
 
+    @commands.command(brief=f'Buttons for assigning/unassigning Role 1')
+    @commands.has_role(owner)
+    async def roles_reload(self, ctx):
+        self.config = config
+        with open('conf/roles.json') as json_file:
+            self.roles = json.load(json_file)
+
+        await ctx.message.delete()
 
     @commands.command(brief=f'Buttons for assigning/unassigning Role 1')
     @commands.has_role(owner)
