@@ -73,7 +73,8 @@ class Assigner(commands.Cog):
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
             await ctx.send(
-                self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
+                self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+                                        faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
                 components=[
                     [join, leave]
                 ]

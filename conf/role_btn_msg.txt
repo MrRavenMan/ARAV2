@@ -1,2 +1,2 @@
 
-**This role is for {role_mention} of the community**
+**This role is for {role_mention} of the community {faq_channel}**
