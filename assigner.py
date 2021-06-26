@@ -122,10 +122,17 @@ class Assigner(commands.Cog):
         join = Button(style=ButtonStyle.blue, label="Assign All Roles", id="e_all_join")
         leave = Button(style=ButtonStyle.red, label="Unassign All Roles", id="e_all_leave")
 
+        if self.config["role_introduction"] == "True":
+            with open ("conf/role_intro.txt", "r") as myfile:
+                data=myfile.readlines()
+
+            role_all_desc = ""
+            for i in data:
+                role_all_desc += i
+            role_all_desc.format(faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
 
         await ctx.send(
-            f"__**Pick your new role!**__ \n \
-            \n **This button is for assigning all roles of the community** \n",
+            role_all_desc,
             components=[
                 [join, leave]
             ]
