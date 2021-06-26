@@ -1,9 +1,11 @@
 import json
 import time
 import configparser
+import queue, threading
+import asyncio
 
 from discord.ext import commands
-from discord import utils, Embed, Colour, File
+from discord import utils, Embed, Colour, File, Forbidden
 from discord_components import Button, ButtonStyle, InteractionType, component
 
 config = configparser.ConfigParser()
@@ -11,14 +13,25 @@ config.read("conf/config.ini")
 owner = config["General"]["manager_role"]
 
 
+
 class Assigner(commands.Cog):
     def __init__(self, client, config):
         self.bot = client
         self.config = config
+
+        self.message_q = queue.Queue()
+
         with open('conf/roles.json') as json_file:
             self.roles = json.load(json_file)
 
-    async def role_assign(self, ctx, res, role_name, manager_role):  # Function for assigning a member a role
+        with open ("conf/role_btn_msg.txt", "r") as myfile:
+                data=myfile.readlines()
+        self.role_btn_msg = ""
+        for i in data:
+            self.role_btn_msg += i
+        
+
+    async def role_assign(self, ctx, res, role_name):  # Function for assigning a member a role
         member = await ctx.channel.guild.fetch_member((res.user.id))
         role = utils.get(member.guild.roles, name=role_name)
         if role not in member.roles:
@@ -60,7 +73,7 @@ class Assigner(commands.Cog):
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
             await ctx.send(
-                "\n **This role is for {0} of the community** \n".format(utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
+                self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
                 components=[
                     [join, leave]
                 ]
@@ -74,27 +87,19 @@ class Assigner(commands.Cog):
             if self.roles[f"Role{x}"]["active"] is False:
                 self.bot.remove_command(f"role{x}")
 
-    @commands.command(brief=f'Buttons for assigning/unassigning Role 1')
-    @commands.has_role(owner)
-    async def roles_reload(self, ctx):
-        self.config = config
-        with open('conf/roles.json') as json_file:
-            self.roles = json.load(json_file)
 
-        await ctx.message.delete()
-
-    @commands.command(brief=f'Buttons for assigning/unassigning Role 1')
+    @commands.command(brief=f'Display roles')
     @commands.has_role(owner)
     async def roles(self, ctx):
         role_list = "The available roles are: \n"
         for role_num, _ in self.roles.items():
             if self.roles[role_num]["active"] is True:
-                role_list += f'*{role_num} = {self.roles[role_num]["role_name"]}\n'
+                role_list += f'*{role_num}: {self.roles[role_num]["role_name"]}\n'
 
         await ctx.message.reply(role_list)
         await ctx.message.delete()
 
-    @commands.command(brief="Posts introduction message for role buttons")
+    @commands.command(brief="Post introduction message for role buttons")
     @commands.has_role(owner)
     async def role_intro(self, ctx):
         if self.config["role_introduction"] == "True":
@@ -124,8 +129,6 @@ class Assigner(commands.Cog):
             ]
         )
         await ctx.message.delete()
-
-        # _ = await ctx.invoke(self.bot.get_command("role1"))
 
 
     """ Commands for all roles in roles list"""
@@ -557,7 +560,6 @@ class Assigner(commands.Cog):
                                 role_list.append(role)
                     
                     await member.remove_roles(*role_list)
-
                 
                 if event.component.id == "e_R1_join":
                     resp = await self.role_assign(ctx, event, self.roles["Role1"]["role_name"])
@@ -646,14 +648,20 @@ class Assigner(commands.Cog):
                     elif event.component.id == "e_R20_leave":
                         resp = await self.role_unassign(ctx, event, self.roles["Role20"]["role_name"])
 
-
+    
                 if response is None:  # check for error in response from button or resp from role assigner func
                     await event.channel.send(
                         "Something went wrong. Please try it again"
                     )
 
-                if event.channel == ctx.channel:  # respond to user with response
-                    await event.respond(
-                        type=InteractionType.ChannelMessageWithSource,
-                        embed=response
-                    )
+                if self.config.getboolean('role_embeds') is True:
+                    if event.channel == ctx.channel:  # respond to user with response
+                        await event.respond(
+                            type=InteractionType.ChannelMessageWithSource,
+                            embed=response
+                        )
+                else:
+                    if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
+                        await event.respond(
+                            type=InteractionType.UpdateMessage,
+                        )
