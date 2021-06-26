@@ -25,7 +25,7 @@ class Assigner(commands.Cog):
             self.roles = json.load(json_file)
 
         with open ("conf/role_btn_msg.txt", "r") as myfile:
-                data=myfile.readlines()
+            data=myfile.readlines()
         self.role_btn_msg = ""
         for i in data:
             self.role_btn_msg += i
@@ -73,6 +73,7 @@ class Assigner(commands.Cog):
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
             await ctx.send(
+                # self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
                 self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
                                         faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
                 components=[
