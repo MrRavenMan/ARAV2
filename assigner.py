@@ -29,6 +29,8 @@ class Assigner(commands.Cog):
         self.role_btn_msg = ""
         for i in data:
             self.role_btn_msg += i
+
+        
         
 
     async def role_assign(self, ctx, res, role_name):  # Function for assigning a member a role
@@ -122,17 +124,14 @@ class Assigner(commands.Cog):
         join = Button(style=ButtonStyle.blue, label="Assign All Roles", id="e_all_join")
         leave = Button(style=ButtonStyle.red, label="Unassign All Roles", id="e_all_leave")
 
-        if self.config["role_introduction"] == "True":
-            with open ("conf/role_intro.txt", "r") as myfile:
-                data=myfile.readlines()
-
-            role_all_desc = ""
-            for i in data:
-                role_all_desc += i
-            role_all_desc.format(faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
+        with open ("conf/role_all.txt", "r") as myfile:
+            data=myfile.readlines()
+        role_all_msg = ""
+        for i in data:
+            role_all_msg += i
 
         await ctx.send(
-            role_all_desc,
+            role_all_msg.format(faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
             components=[
                 [join, leave]
             ]
