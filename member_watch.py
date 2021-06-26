@@ -29,6 +29,6 @@ class MemberWatch(Cog):
     @Cog.listener()
     async def on_member_remove(self, member):
         print("member left")
-        await self.bot.get_channel(int(self.config["leave_msg_channel_id"])).send(f"**{member.name}** has left the server!")
+        await self.bot.get_channel(int(self.config["leave_msg_channel_id"])).send(f"**{member.name}#{member.discriminator}** has left the server!")
 
     
