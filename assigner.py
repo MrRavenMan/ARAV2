@@ -74,7 +74,7 @@ class Assigner(commands.Cog):
             join = Button(style=ButtonStyle.green, label=button_inf["lbl_join"], id=button_inf["emb_join"])
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
-            msg = await ctx.send("Placeholder text for button")
+            msg = await ctx.send("Generating button, please hold...")
             await asyncio.sleep(0.7)
 
             await msg.edit(
