@@ -77,6 +77,7 @@ class Assigner(commands.Cog):
             await ctx.send(
                 # self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
                 self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+                                        community_name=button_inf["community_name"],
                                         faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
                 components=[
                     [join, leave]
