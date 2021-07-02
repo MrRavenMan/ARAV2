@@ -116,6 +116,7 @@ class Assigner(commands.Cog):
             text = ""
             for i in data:
                 text += i
+            await ctx.send(text)
             await ctx.message.delete()
 
     @commands.command(brief="Post introduction picture for role buttons")
@@ -565,11 +566,11 @@ class Assigner(commands.Cog):
                                 type=InteractionType.ChannelMessageWithSource,
                                 embed=response
                             )
-                        else:
-                            if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
-                                await event.respond(
-                                    type=InteractionType.UpdateMessage,
-                                )
+                    else:
+                        if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
+                            await event.respond(
+                                type=InteractionType.UpdateMessage,
+                            )
                 
 
                     # Handle user requested action (assign/unassign something) after response is send
@@ -685,9 +686,6 @@ class Assigner(commands.Cog):
                             resp = await self.role_assign(ctx, event, self.roles["Role20"]["role_name"])
                         elif event.component.id == "e_R20_leave":
                             resp = await self.role_unassign(ctx, event, self.roles["Role20"]["role_name"])
-
-        
-                    
 
             except:
                 print("ATTENTION! Unpected error: Restarting buttons_on loop!")
