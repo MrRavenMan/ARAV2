@@ -74,9 +74,11 @@ class Assigner(commands.Cog):
             join = Button(style=ButtonStyle.green, label=button_inf["lbl_join"], id=button_inf["emb_join"])
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
-            await ctx.send(
-                # self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
-                self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+            msg = await ctx.send("Placeholder text for button")
+            await asyncio.sleep(0.7)
+
+            await msg.edit(
+                content=self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
                                         community_name=button_inf["community_name"],
                                         faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
                 components=[
@@ -106,7 +108,7 @@ class Assigner(commands.Cog):
 
     @commands.command(brief="Post introduction message for role buttons")
     @commands.has_role(owner)
-    async def role_intro(self, ctx):
+    async def role_intro_text(self, ctx):
         if self.config["role_introduction"] == "True":
             with open ("conf/role_intro.txt", "r") as myfile:
                 data=myfile.readlines()
@@ -114,8 +116,13 @@ class Assigner(commands.Cog):
             text = ""
             for i in data:
                 text += i
+            await ctx.message.delete()
 
-            await ctx.send(text, file=File(self.config["role_introduction_picture"]))
+    @commands.command(brief="Post introduction picture for role buttons")
+    @commands.has_role(owner)
+    async def role_intro_pic(self, ctx):
+        if self.config["role_introduction"] == "True":
+            await ctx.send(file=File(self.config["role_introduction_picture"]))
             await ctx.message.delete()
 
 
@@ -541,136 +548,146 @@ class Assigner(commands.Cog):
 
 
         while True:
-            event = await self.bot.wait_for("button_click")
-            if event.channel is not ctx.channel:
-                return
-            if event.channel == ctx.channel:
-                response = buttons.get(event.component.id)
+            try:
+                event = await self.bot.wait_for("button_click")
+                if event.channel is not ctx.channel:
+                    return
+                if event.channel == ctx.channel:
+                    response = buttons.get(event.component.id)
 
-                if event.component.id == 'e_all_join':
-                    member = await ctx.channel.guild.fetch_member((event.user.id))
-                    role_list = []
-                    
-                    for role_num, _ in self.roles.items():
-                        if self.roles[role_num]["active"] is True:
-                            role = utils.get(member.guild.roles, name=self.roles[role_num]["role_name"])
-                            if role not in member.roles:
-                                role_list.append(role)
-                    
-                    await member.add_roles(*role_list)
-                elif event.component.id == 'e_all_leave':
-                    member = await ctx.channel.guild.fetch_member((event.user.id))
-                    role_list = []
-                    for role_num, _ in self.roles.items():
-                        #  resp = await self.role_unassign(ctx, event, self.roles[key]["role_name"])
-                        if self.roles[role_num]["active"] is True:
-                            role = utils.get(member.guild.roles, name=self.roles[role_num]["role_name"])
-                            if role in member.roles:
-                                role_list.append(role)
-                    
-                    await member.remove_roles(*role_list)
+                    if response is None:  # check for error in response from button or resp from role assigner func
+                        await event.channel.send(
+                            "Something went wrong. Please try it again"
+                        )
+                    if self.config.getboolean('role_embeds') is True:
+                        if event.channel == ctx.channel:  # respond to user with response
+                            await event.respond(
+                                type=InteractionType.ChannelMessageWithSource,
+                                embed=response
+                            )
+                        else:
+                            if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
+                                await event.respond(
+                                    type=InteractionType.UpdateMessage,
+                                )
                 
-                if event.component.id == "e_R1_join":
-                    resp = await self.role_assign(ctx, event, self.roles["Role1"]["role_name"])
-                elif event.component.id == "e_R1_leave":
-                    resp = await self.role_unassign(ctx, event, self.roles["Role1"]["role_name"])
-                elif event.component.id == "e_R2_join":
-                    resp = await self.role_assign(ctx, event, self.roles["Role2"]["role_name"])
-                elif event.component.id == "e_R2_leave":
-                    resp = await self.role_unassign(ctx, event, self.roles["Role2"]["role_name"])
-                elif event.component.id == "e_R3_join":
-                    resp = await self.role_assign(ctx, event, self.roles["Role3"]["role_name"])
-                elif event.component.id == "e_R3_leave":
-                    resp = await self.role_unassign(ctx, event, self.roles["Role3"]["role_name"])
-                elif event.component.id == "e_R4_join":
-                    resp = await self.role_assign(ctx, event, self.roles["Role4"]["role_name"])
-                elif event.component.id == "e_R4_leave":
-                    resp = await self.role_unassign(ctx, event, self.roles["Role4"]["role_name"])
-                elif event.component.id == "e_R5_join":
-                    resp = await self.role_assign(ctx, event, self.roles["Role5"]["role_name"])
-                elif event.component.id == "e_R5_leave":
-                    resp = await self.role_unassign(ctx, event, self.roles["Role5"]["role_name"])
 
-                if self.roles["Role6"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
-                    if event.component.id == "e_R6_join":  # where is active checks are first performed on sets of 5
-                        resp = await self.role_assign(ctx, event, self.roles["Role6"]["role_name"])
-                    elif event.component.id == "e_R6_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role6"]["role_name"])
-                    elif event.component.id == "e_R7_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role7"]["role_name"])
-                    elif event.component.id == "e_R7_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role7"]["role_name"])
-                    elif event.component.id == "e_R8_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role8"]["role_name"])
-                    elif event.component.id == "e_R8_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role8"]["role_name"])
-                    elif event.component.id == "e_R9_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role9"]["role_name"])
-                    elif event.component.id == "e_R9_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role9"]["role_name"])
-                    elif event.component.id == "e_R10_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role10"]["role_name"])
-                    elif event.component.id == "e_R10_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role10"]["role_name"])
+                    # Handle user requested action (assign/unassign something) after response is send
+                    if event.component.id == 'e_all_join' or event.component.id == 'e_all_leave':
+                        if event.component.id == 'e_all_join':
+                            member = await ctx.channel.guild.fetch_member((event.user.id))
+                            role_list = []
+                            
+                            for role_num, _ in self.roles.items():
+                                if self.roles[role_num]["active"] is True:
+                                    role = utils.get(member.guild.roles, name=self.roles[role_num]["role_name"])
+                                    if role not in member.roles:
+                                        role_list.append(role)
+                            
+                            await member.add_roles(*role_list)
+                        elif event.component.id == 'e_all_leave':                    
+                            member = await ctx.channel.guild.fetch_member((event.user.id))
+                            role_list = []
+                            for role_num, _ in self.roles.items():
+                                #  resp = await self.role_unassign(ctx, event, self.roles[key]["role_name"])
+                                if self.roles[role_num]["active"] is True:
+                                    role = utils.get(member.guild.roles, name=self.roles[role_num]["role_name"])
+                                    if role in member.roles:
+                                        role_list.append(role)
+                            
+                            await member.remove_roles(*role_list)
 
-                if self.roles["Role11"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
-                    if event.component.id == "e_R11_join":  # where is active checks are first performed on sets of 5
-                        resp = await self.role_assign(ctx, event, self.roles["Role11"]["role_name"])
-                    elif event.component.id == "e_R11_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role11"]["role_name"])
-                    elif event.component.id == "e_R12_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role12"]["role_name"])
-                    elif event.component.id == "e_R12_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role12"]["role_name"])
-                    elif event.component.id == "e_R13_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role13"]["role_name"])
-                    elif event.component.id == "e_R13_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role13"]["role_name"])
-                    elif event.component.id == "e_R14_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role14"]["role_name"])
-                    elif event.component.id == "e_R14_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role14"]["role_name"])
-                    elif event.component.id == "e_R15_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role15"]["role_name"])
-                    elif event.component.id == "e_R15_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role15"]["role_name"])
+                        continue # Go back to while loop start
+                    
+                    if event.component.id == "e_R1_join":
+                        resp = await self.role_assign(ctx, event, self.roles["Role1"]["role_name"])
+                    elif event.component.id == "e_R1_leave":
+                        resp = await self.role_unassign(ctx, event, self.roles["Role1"]["role_name"])
+                    elif event.component.id == "e_R2_join":
+                        resp = await self.role_assign(ctx, event, self.roles["Role2"]["role_name"])
+                    elif event.component.id == "e_R2_leave":
+                        resp = await self.role_unassign(ctx, event, self.roles["Role2"]["role_name"])
+                    elif event.component.id == "e_R3_join":
+                        resp = await self.role_assign(ctx, event, self.roles["Role3"]["role_name"])
+                    elif event.component.id == "e_R3_leave":
+                        resp = await self.role_unassign(ctx, event, self.roles["Role3"]["role_name"])
+                    elif event.component.id == "e_R4_join":
+                        resp = await self.role_assign(ctx, event, self.roles["Role4"]["role_name"])
+                    elif event.component.id == "e_R4_leave":
+                        resp = await self.role_unassign(ctx, event, self.roles["Role4"]["role_name"])
+                    elif event.component.id == "e_R5_join":
+                        resp = await self.role_assign(ctx, event, self.roles["Role5"]["role_name"])
+                    elif event.component.id == "e_R5_leave":
+                        resp = await self.role_unassign(ctx, event, self.roles["Role5"]["role_name"])
 
-                if self.roles["Role16"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
-                    if event.component.id == "e_R16_join":  # where is active checks are first performed on sets of 5
-                        resp = await self.role_assign(ctx, event, self.roles["Role16"]["role_name"])
-                    elif event.component.id == "e_R16_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role16"]["role_name"])
-                    elif event.component.id == "e_R17_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role17"]["role_name"])
-                    elif event.component.id == "e_R17_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role17"]["role_name"])
-                    elif event.component.id == "e_R18_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role18"]["role_name"])
-                    elif event.component.id == "e_R18_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role18"]["role_name"])
-                    elif event.component.id == "e_R19_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role19"]["role_name"])
-                    elif event.component.id == "e_R19_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role19"]["role_name"])
-                    elif event.component.id == "e_R20_join":
-                        resp = await self.role_assign(ctx, event, self.roles["Role20"]["role_name"])
-                    elif event.component.id == "e_R20_leave":
-                        resp = await self.role_unassign(ctx, event, self.roles["Role20"]["role_name"])
+                    if self.roles["Role6"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
+                        if event.component.id == "e_R6_join":  # where is active checks are first performed on sets of 5
+                            resp = await self.role_assign(ctx, event, self.roles["Role6"]["role_name"])
+                        elif event.component.id == "e_R6_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role6"]["role_name"])
+                        elif event.component.id == "e_R7_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role7"]["role_name"])
+                        elif event.component.id == "e_R7_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role7"]["role_name"])
+                        elif event.component.id == "e_R8_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role8"]["role_name"])
+                        elif event.component.id == "e_R8_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role8"]["role_name"])
+                        elif event.component.id == "e_R9_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role9"]["role_name"])
+                        elif event.component.id == "e_R9_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role9"]["role_name"])
+                        elif event.component.id == "e_R10_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role10"]["role_name"])
+                        elif event.component.id == "e_R10_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role10"]["role_name"])
 
-    
-                if response is None:  # check for error in response from button or resp from role assigner func
-                    await event.channel.send(
-                        "Something went wrong. Please try it again"
-                    )
+                    if self.roles["Role11"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
+                        if event.component.id == "e_R11_join":  # where is active checks are first performed on sets of 5
+                            resp = await self.role_assign(ctx, event, self.roles["Role11"]["role_name"])
+                        elif event.component.id == "e_R11_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role11"]["role_name"])
+                        elif event.component.id == "e_R12_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role12"]["role_name"])
+                        elif event.component.id == "e_R12_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role12"]["role_name"])
+                        elif event.component.id == "e_R13_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role13"]["role_name"])
+                        elif event.component.id == "e_R13_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role13"]["role_name"])
+                        elif event.component.id == "e_R14_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role14"]["role_name"])
+                        elif event.component.id == "e_R14_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role14"]["role_name"])
+                        elif event.component.id == "e_R15_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role15"]["role_name"])
+                        elif event.component.id == "e_R15_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role15"]["role_name"])
 
-                if self.config.getboolean('role_embeds') is True:
-                    if event.channel == ctx.channel:  # respond to user with response
-                        await event.respond(
-                            type=InteractionType.ChannelMessageWithSource,
-                            embed=response
-                        )
-                else:
-                    if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
-                        await event.respond(
-                            type=InteractionType.UpdateMessage,
-                        )
+                    if self.roles["Role16"]["active"] is True:  # To increase performance, roles are divided into 5 role groups
+                        if event.component.id == "e_R16_join":  # where is active checks are first performed on sets of 5
+                            resp = await self.role_assign(ctx, event, self.roles["Role16"]["role_name"])
+                        elif event.component.id == "e_R16_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role16"]["role_name"])
+                        elif event.component.id == "e_R17_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role17"]["role_name"])
+                        elif event.component.id == "e_R17_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role17"]["role_name"])
+                        elif event.component.id == "e_R18_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role18"]["role_name"])
+                        elif event.component.id == "e_R18_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role18"]["role_name"])
+                        elif event.component.id == "e_R19_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role19"]["role_name"])
+                        elif event.component.id == "e_R19_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role19"]["role_name"])
+                        elif event.component.id == "e_R20_join":
+                            resp = await self.role_assign(ctx, event, self.roles["Role20"]["role_name"])
+                        elif event.component.id == "e_R20_leave":
+                            resp = await self.role_unassign(ctx, event, self.roles["Role20"]["role_name"])
+
+        
+                    
+
+            except:
+                print("ATTENTION! Unpected error: Restarting buttons_on loop!")
