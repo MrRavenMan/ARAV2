@@ -21,7 +21,8 @@ class MemberWatch(Cog):
             text = ""
             for i in data:
                 text += i
-            await member.send(text.format(user_mention=member.guild.name))
+            await member.send(text.format(user_mention=member.name,
+                                            server_mention=member.guild.name))
         except Forbidden:
             pass
 

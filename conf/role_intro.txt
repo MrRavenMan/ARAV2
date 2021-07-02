@@ -1,5 +1,2 @@
 **Welcome to the Test Server**
-
-Below are a bunch of buttons that do some stuff
-
-__click them__ :smile:
+This message is configured in conf/role_intro.txt. No mentions available!

@@ -25,10 +25,12 @@ class Assigner(commands.Cog):
             self.roles = json.load(json_file)
 
         with open ("conf/role_btn_msg.txt", "r") as myfile:
-                data=myfile.readlines()
+            data=myfile.readlines()
         self.role_btn_msg = ""
         for i in data:
             self.role_btn_msg += i
+
+        
         
 
     async def role_assign(self, ctx, res, role_name):  # Function for assigning a member a role
@@ -73,7 +75,9 @@ class Assigner(commands.Cog):
             leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
         
             await ctx.send(
+                # self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention),
                 self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+                                        community_name=button_inf["community_name"],
                                         faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
                 components=[
                     [join, leave]
@@ -121,10 +125,14 @@ class Assigner(commands.Cog):
         join = Button(style=ButtonStyle.blue, label="Assign All Roles", id="e_all_join")
         leave = Button(style=ButtonStyle.red, label="Unassign All Roles", id="e_all_leave")
 
+        with open ("conf/role_all.txt", "r") as myfile:
+            data=myfile.readlines()
+        role_all_msg = ""
+        for i in data:
+            role_all_msg += i
 
         await ctx.send(
-            f"__**Pick your new role!**__ \n \
-            \n **This button is for assigning all roles of the community** \n",
+            role_all_msg.format(faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
             components=[
                 [join, leave]
             ]
