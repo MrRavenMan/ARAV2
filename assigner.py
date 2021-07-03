@@ -1,7 +1,6 @@
 import json
 import time
 import configparser
-import queue, threading
 import asyncio
 
 from discord.ext import commands
@@ -19,8 +18,6 @@ class Assigner(commands.Cog):
         self.bot = client
         self.config = config
 
-        self.message_q = queue.Queue()
-
         with open('conf/roles.json') as json_file:
             self.roles = json.load(json_file)
 
@@ -30,74 +27,16 @@ class Assigner(commands.Cog):
         for i in data:
             self.role_btn_msg += i
 
-        
-        
 
-    async def role_assign(self, ctx, res, role_name):  # Function for assigning a member a role
-        member = await ctx.channel.guild.fetch_member((res.user.id))
-        role = utils.get(member.guild.roles, name=role_name)
-        if role not in member.roles:
-            await member.add_roles(role)
-            print(f"{member.name} has been assigned the role of {res.component.label}")
-            return 1
-        else:
-            return 0
-
-    async def role_unassign(self, ctx, res, role_name):  # Function for unassigning a member a role
-        member = await ctx.channel.guild.fetch_member((res.user.id))
-        role = utils.get(member.guild.roles, name=role_name)
-        if role in member.roles:
-            await member.remove_roles(role)
-            print(f"{member.name} has been unassigned the role of {res.component.label}")
-            return 2
-        else:
-            return 0
-
-    async def role_invert(self, ctx, res, role_name):  # Function for inverting (assigning/unassigning a mebmer a role)
-        member = await ctx.channel.guild.fetch_member((res.user.id))
-        role = utils.get(member.guild.roles, name=role_name)
-        if role not in member.roles:
-            await member.add_roles(role)
-            print(f"{member.name} has been assigned the role of {res.component.label}")
-            return 1
-        elif role in member.roles:
-            await member.remove_roles(role)
-            print(f"{member.name} has been unassigned the role of {res.component.label}")
-            return 2
-        else:
-            return 0
-
-    
-    async def role_func(self, ctx, button_inf):
-        print(f'Adding button for {button_inf["role_name"]}')
-        if button_inf["active"] is True:
-            join = Button(style=ButtonStyle.green, label=button_inf["lbl_join"], id=button_inf["emb_join"])
-            leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
-        
-            msg = await ctx.send("Generating button, please hold...")
-            await asyncio.sleep(0.7)
-
-            await msg.edit(
-                content=self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
-                                        community_name=button_inf["community_name"],
-                                        faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
-                components=[
-                    [join, leave]
-                ]
-            )
-            await ctx.message.delete()
-
-
-    @commands.Cog.listener()  # Remove unused role commands on startup
-    async def on_ready(self):
-        for x in range(1, 21):
+    @commands.Cog.listener()  
+    async def on_ready(self): # Function that runs on startup
+        for x in range(1, 21): # Remove unused role commands on startup
             if self.roles[f"Role{x}"]["active"] is False:
                 self.bot.remove_command(f"role{x}")
 
-
     @commands.command(brief=f'Display roles')
     @commands.has_role(owner)
-    async def roles(self, ctx):
+    async def roles(self, ctx): # Display available role commands
         role_list = "The available roles are: \n"
         for role_num, _ in self.roles.items():
             if self.roles[role_num]["active"] is True:
@@ -108,7 +47,7 @@ class Assigner(commands.Cog):
 
     @commands.command(brief="Post introduction message for role buttons")
     @commands.has_role(owner)
-    async def role_intro_text(self, ctx):
+    async def role_intro_text(self, ctx): # Send introduction message derived from conf/role_intro.txt {faq_channel_id} mention available
         if self.config["role_introduction"] == "True":
             with open ("conf/role_intro.txt", "r") as myfile:
                 data=myfile.readlines()
@@ -116,12 +55,12 @@ class Assigner(commands.Cog):
             text = ""
             for i in data:
                 text += i
-            await ctx.send(text)
+            await ctx.send(text.format(faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention))
             await ctx.message.delete()
 
     @commands.command(brief="Post introduction picture for role buttons")
     @commands.has_role(owner)
-    async def role_intro_pic(self, ctx):
+    async def role_intro_pic(self, ctx): # Send introduction picture. Path derived from conf/config.ini --> role_introduction_picture
         if self.config["role_introduction"] == "True":
             await ctx.send(file=File(self.config["role_introduction_picture"]))
             await ctx.message.delete()
@@ -274,7 +213,7 @@ class Assigner(commands.Cog):
     @commands.command(brief="Makes all the role buttons work and function")
     @commands.has_role(owner)
     async def buttons_on(self, ctx):  # Watches all roles for button_click state updates
-        e_all_join = Embed(title="All roles assigned", description="You have joined all roles!", colour=Colour.from_rgb(50, 50, 50))
+        e_all_join = Embed(title="All roles assigned", description="You have joined all roles!", colour=Colour.from_rgb(50, 50, 50))  # Create embeds for all roles buttons
         e_all_leave = Embed(title="All roles unassigned", description="You have been unassigned all roles!", colour=Colour.from_rgb(50, 50, 50))
         
         buttons = {  # Make buttons for join all and leave all buttons
@@ -542,39 +481,26 @@ class Assigner(commands.Cog):
                                         self.roles["Role20"]["embed"]["color_leave_b"]))
 
 
-        print("Watching all buttons")  # Confirm watching
+        print("Watching all buttons")  # Confirm watching buttons for click events
         await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
         time.sleep(0.5)
         await ctx.message.delete()
 
 
-        while True:
+        while True: # Start while loop to keep watching for button click event
+            event = await self.bot.wait_for("button_click")
+            
             try:
-                event = await self.bot.wait_for("button_click")
                 if event.channel is not ctx.channel:
                     return
-                if event.channel == ctx.channel:
-                    response = buttons.get(event.component.id)
-
-                    if response is None:  # check for error in response from button or resp from role assigner func
-                        await event.channel.send(
-                            "Something went wrong. Please try it again"
-                        )
-                    if self.config.getboolean('role_embeds') is True:
-                        if event.channel == ctx.channel:  # respond to user with response
-                            await event.respond(
-                                type=InteractionType.ChannelMessageWithSource,
-                                embed=response
-                            )
-                    else:
-                        if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
-                            await event.respond(
-                                type=InteractionType.UpdateMessage,
-                            )
-                
+                if event.channel == ctx.channel: # Check if click event is in correct channel
+                    response = buttons.get(event.component.id)         
 
                     # Handle user requested action (assign/unassign something) after response is send
                     if event.component.id == 'e_all_join' or event.component.id == 'e_all_leave':
+                        await self.btn_response(response, event, ctx) # Run btn interaction response (required by discord API) 
+
+
                         if event.component.id == 'e_all_join':
                             member = await ctx.channel.guild.fetch_member((event.user.id))
                             role_list = []
@@ -599,7 +525,7 @@ class Assigner(commands.Cog):
                             await member.remove_roles(*role_list)
 
                         continue # Go back to while loop start
-                    
+                
                     if event.component.id == "e_R1_join":
                         resp = await self.role_assign(ctx, event, self.roles["Role1"]["role_name"])
                     elif event.component.id == "e_R1_leave":
@@ -686,6 +612,94 @@ class Assigner(commands.Cog):
                             resp = await self.role_assign(ctx, event, self.roles["Role20"]["role_name"])
                         elif event.component.id == "e_R20_leave":
                             resp = await self.role_unassign(ctx, event, self.roles["Role20"]["role_name"])
+        
+                    await self.btn_response(response, event, ctx) # Run btn interaction response (required by discord API) 
 
-            except:
-                print("ATTENTION! Unpected error: Restarting buttons_on loop!")
+            except commands.errors.CommandInvokeError:
+                print("ATTENTION: Error: No resposne in time error: Restarting buttons_on loop")
+
+    """ Functions """
+    async def role_assign(self, ctx, res, role_name):  # Function for assigning a member a role
+        member = await ctx.channel.guild.fetch_member((res.user.id))
+        role = utils.get(member.guild.roles, name=role_name)
+        if role not in member.roles:
+            await member.add_roles(role)
+            print(f"{member.name} has been assigned the role of {res.component.label}")
+            return 1
+        else:
+            return 0
+
+
+    async def role_unassign(self, ctx, res, role_name):  # Function for unassigning a member a role
+        member = await ctx.channel.guild.fetch_member((res.user.id))
+        role = utils.get(member.guild.roles, name=role_name)
+        if role in member.roles:
+            await member.remove_roles(role)
+            print(f"{member.name} has been unassigned the role of {res.component.label}")
+            return 2
+        else:
+            return 0
+
+    async def role_invert(self, ctx, res, role_name):  # Function for inverting (assigning/unassigning a mebmer a role)
+        member = await ctx.channel.guild.fetch_member((res.user.id))
+        role = utils.get(member.guild.roles, name=role_name)
+        if role not in member.roles:
+            await member.add_roles(role)
+            print(f"{member.name} has been assigned the role of {res.component.label}")
+            return 1
+        elif role in member.roles:
+            await member.remove_roles(role)
+            print(f"{member.name} has been unassigned the role of {res.component.label}")
+            return 2
+        else:
+            return 0
+
+    
+    async def role_func(self, ctx, button_inf):
+        print(f'Adding button for {button_inf["role_name"]}')
+        if button_inf["active"] is True:
+            join = Button(style=ButtonStyle.green, label=button_inf["lbl_join"], id=button_inf["emb_join"])
+            leave = Button(style=ButtonStyle.red, label=button_inf["lbl_leave"], id=button_inf["emb_leave"])
+        
+            if self.config.getboolean("role_btn_tag_later") is True:
+                msg = await ctx.send("Generating button, please hold...")
+                await asyncio.sleep(0.7)
+
+                await msg.edit(
+                    content=self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+                                            community_name=button_inf["community_name"],
+                                            faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
+                    components=[
+                        [join, leave]
+                    ]
+                )
+                await ctx.message.delete()
+            elif self.config.getboolean("role_btn_tag_later") is False:
+                await ctx.send(
+                    content=self.role_btn_msg.format(role_mention=utils.get(ctx.guild.roles, name=button_inf["role_name"]).mention,
+                                            community_name=button_inf["community_name"],
+                                            faq_channel=ctx.guild.get_channel(int(self.config["faq_channel_id"])).mention),
+                    components=[
+                        [join, leave]
+                    ]
+                )
+            else:
+                print("ATTENTION: ERROR: Config [Assigner]role_btn_tag_later is invalid. Must be set to True/False!")
+
+            
+    async def btn_response(self, response, event, ctx): # Run btn interaction response (required by discord API)  
+        if response is None:  # check for error in response from button or resp from role assigner func
+            await event.channel.send(
+                "Something went wrong. Please try it again"
+            )
+        if self.config.getboolean('role_embeds') is True:
+            if event.channel == ctx.channel:  # respond to user with response
+                await event.respond(
+                    type=InteractionType.ChannelMessageWithSource,
+                    embed=response
+                )
+        else:
+            if event.channel == ctx.channel:  # Fake update btn message and make no response to user after button click
+                await event.respond(
+                    type=InteractionType.UpdateMessage,
+                )
