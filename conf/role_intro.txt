@@ -1,2 +1,2 @@
 **Welcome to the Test Server**
-This message is configured in conf/role_intro.txt. No mentions available!
+This message is configured in conf/role_intro.txt. Check out the {faq_channel}!
