@@ -685,8 +685,11 @@ class Assigner(commands.Cog):
                 )
             else:
                 print("ATTENTION: ERROR: Config [Assigner]role_btn_tag_later is invalid. Must be set to True/False!")
-
             
+            await ctx.message.delete() # Delete command msg
+
+
+
     async def btn_response(self, response, event, ctx): # Run btn interaction response (required by discord API)  
         if response is None:  # check for error in response from button or resp from role assigner func
             await event.channel.send(
