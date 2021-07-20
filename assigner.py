@@ -18,7 +18,6 @@ class Assigner(commands.Cog):
         self.bot = client
         self.config = config
         self.btns_on = True # If true, buttons are already activated
-        self.role_channel = self.bot.get_channel(int(self.config["role_channel_id"]))
 
         with open('conf/roles.json') as json_file:
             self.roles = json.load(json_file)
@@ -502,9 +501,9 @@ class Assigner(commands.Cog):
             event = await self.bot.wait_for("button_click")
             
             try:
-                if event.channel is not self.role_channel:
+                if event.channel is not self.bot.get_channel(int(self.config["role_channel_id"])):
                     return
-                if event.channel == self.role_channel: # Check if click event is in correct channel
+                if event.channel == self.bot.get_channel(int(self.config["role_channel_id"])): # Check if click event is in correct channel
                     response = buttons.get(event.component.id)         
 
                     # Handle user requested action (assign/unassign something) after response is send
@@ -513,7 +512,7 @@ class Assigner(commands.Cog):
 
 
                         if event.component.id == 'e_all_join':
-                            member = await self.role_channel.guild.fetch_member((event.user.id))
+                            member = await self.bot.get_channel(int(self.config["role_channel_id"])).guild.fetch_member((event.user.id))
                             role_list = []
                             
                             for role_num, _ in self.roles.items():
@@ -524,7 +523,7 @@ class Assigner(commands.Cog):
                             
                             await member.add_roles(*role_list)
                         elif event.component.id == 'e_all_leave':                    
-                            member = await self.role_channel.guild.fetch_member((event.user.id))
+                            member = await self.bot.get_channel(int(self.config["role_channel_id"])).guild.fetch_member((event.user.id))
                             role_list = []
                             for role_num, _ in self.roles.items():
                                 #  resp = await self.role_unassign(ctx, event, self.roles[key]["role_name"])
@@ -635,7 +634,7 @@ class Assigner(commands.Cog):
     # Context as parameter for role assigner functions is deprecated. May be removed
     
     async def role_assign(self, res, role_name):  # Function for assigning a member a role
-        member = await self.role_channel.guild.fetch_member((res.user.id))
+        member = await self.bot.get_channel(int(self.config["role_channel_id"])).guild.fetch_member((res.user.id))
         role = utils.get(member.guild.roles, name=role_name)
         if role not in member.roles:
             await member.add_roles(role)
@@ -646,7 +645,7 @@ class Assigner(commands.Cog):
 
 
     async def role_unassign(self, res, role_name):  # Function for unassigning a member a role
-        member = await self.role_channel.guild.fetch_member((res.user.id))
+        member = await self.bot.get_channel(int(self.config["role_channel_id"])).guild.fetch_member((res.user.id))
         role = utils.get(member.guild.roles, name=role_name)
         if role in member.roles:
             await member.remove_roles(role)
@@ -656,7 +655,7 @@ class Assigner(commands.Cog):
             return 0
 
     async def role_invert(self, res, role_name):  # Function for inverting (assigning/unassigning a mebmer a role)
-        member = await self.role_channel.guild.fetch_member((res.user.id))
+        member = await self.bot.get_channel(int(self.config["role_channel_id"])).guild.fetch_member((res.user.id))
         role = utils.get(member.guild.roles, name=role_name)
         if role not in member.roles:
             await member.add_roles(role)
@@ -711,13 +710,13 @@ class Assigner(commands.Cog):
                 "Something went wrong. Please try it again"
             )
         if self.config.getboolean('role_embeds') is True:
-            if event.channel == self.role_channel:  # respond to user with response
+            if event.channel == self.bot.get_channel(int(self.config["role_channel_id"])):  # respond to user with response
                 await event.respond(
                     type=InteractionType.ChannelMessageWithSource,
                     embed=response
                 )
         else:
-            if event.channel == self.role_channel:  # Fake update btn message and make no response to user after button click
+            if event.channel == self.bot.get_channel(int(self.config["role_channel_id"])):  # Fake update btn message and make no response to user after button click
                 await event.respond(
                     type=InteractionType.UpdateMessage,
                 )
