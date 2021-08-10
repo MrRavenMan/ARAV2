@@ -3,6 +3,7 @@ import time
 import configparser
 import asyncio
 
+from discord import Member
 from discord.ext import commands
 from discord import utils, Embed, Colour, File, Forbidden
 from discord_components import Button, ButtonStyle, InteractionType, component
@@ -36,6 +37,25 @@ class Assigner(commands.Cog):
                 self.bot.remove_command(f"role{x}")
 
         await self.activate_btns()
+
+    @commands.command(brief=f'Add/Remove Foxhole role')
+    @commands.has_any_role(owner, int(config["Assigner"]["foxhole_admin_role_id"]))
+    async def foxhole_role(self, ctx, user: Member): # Display available role commands
+        role = ctx.guild.get_role(int(self.config["foxhole_role_id"]))
+        if role not in user.roles:
+            await user.add_roles(role)
+            print(f"{user.name} has been assigned the role of {role.name}")
+        elif role in user.roles:
+            await user.remove_roles(role)
+            print(f"{user.name} has been unassigned the role of {role.name}")
+        else:
+            print(f"An error orcurred while trying to invert {role.name}'s foxhole role")
+
+        await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
+        time.sleep(0.5)
+        await ctx.message.delete()
+
+
 
     @commands.command(brief=f'Display roles')
     @commands.has_role(owner)
