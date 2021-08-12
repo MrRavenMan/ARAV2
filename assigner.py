@@ -38,24 +38,6 @@ class Assigner(commands.Cog):
 
         await self.activate_btns()
 
-    @commands.command(brief=f'Add/Remove Foxhole role')
-    @commands.has_any_role(owner, int(config["Assigner"]["foxhole_admin_role_id"]))
-    async def foxhole_role(self, ctx, user: Member): # Display available role commands
-        role = ctx.guild.get_role(int(self.config["foxhole_role_id"]))
-        if role not in user.roles:
-            await user.add_roles(role)
-            print(f"{user.name} has been assigned the role of {role.name}")
-        elif role in user.roles:
-            await user.remove_roles(role)
-            print(f"{user.name} has been unassigned the role of {role.name}")
-        else:
-            print(f"An error orcurred while trying to invert {role.name}'s foxhole role")
-
-        await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
-        time.sleep(0.5)
-        await ctx.message.delete()
-
-
 
     @commands.command(brief=f'Display roles')
     @commands.has_role(owner)
@@ -108,6 +90,79 @@ class Assigner(commands.Cog):
             ]
         )
         await ctx.message.delete()
+
+
+    """ Commands for special roles """
+    try:
+        if int(config["Assigner"]["special_role_1_admin_id"]) != 0 and int(config["Assigner"]["special_role_1_id"]) != 0:
+            @commands.command(brief=f'Add/Remove Special role 1 to <UserTagged>')
+            @commands.has_any_role(owner, int(config["Assigner"]["special_role_1_admin_id"]))
+            async def special_role1(self, ctx, user: Member): # Display available role commands
+                role = ctx.guild.get_role(int(self.config["special_role_1_id"]))
+                if role not in user.roles:
+                    await user.add_roles(role)
+                    print(f"{user.name} has been assigned the role of {role.name}")
+                elif role in user.roles:
+                    await user.remove_roles(role)
+                    print(f"{user.name} has been unassigned the role of {role.name}")
+                else:
+                    print(f"An error orcurred while trying to invert {role.name}'s special role 1 role")
+
+                await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
+                time.sleep(0.5)
+                await ctx.message.delete()
+    except ValueError:
+        print("Please make sure special_role_1_admin_id and special_role_1_id is a role ID or 0 to disable")
+    except:
+        print("Error loading special role 1 or/and special role 1 admin")
+
+    try:
+        if int(config["Assigner"]["special_role_2_admin_id"]) != 0 and int(config["Assigner"]["special_role_2_id"]) != 0:
+            @commands.command(brief=f'Add/Remove Special role 2 to <UserTagged>')
+            @commands.has_any_role(owner, int(config["Assigner"]["special_role_2_admin_id"]))
+            async def special_role2(self, ctx, user: Member): # Display available role commands
+                role = ctx.guild.get_role(int(self.config["special_role_2_id"]))
+                if role not in user.roles:
+                    await user.add_roles(role)
+                    print(f"{user.name} has been assigned the role of {role.name}")
+                elif role in user.roles:
+                    await user.remove_roles(role)
+                    print(f"{user.name} has been unassigned the role of {role.name}")
+                else:
+                    print(f"An error orcurred while trying to invert {role.name}'s special role 2 role")
+
+                await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
+                time.sleep(0.5)
+                await ctx.message.delete()
+    except ValueError:
+        print("Please make sure special_role_2_admin_id and special_role_2_id is a role ID or 0 to disable")
+    except:
+        print("Error loading special role 2 or/and special role 2 admin")
+
+    try:
+        if int(config["Assigner"]["special_role_3_admin_id"]) != 0 and int(config["Assigner"]["special_role_3_id"]) != 0:
+            @commands.command(brief=f'Add/Remove Special role 3 to <UserTagged>')
+            @commands.has_any_role(owner, int(config["Assigner"]["special_role_3_admin_id"]))
+            async def special_role3(self, ctx, user: Member): # Display available role commands
+                role = ctx.guild.get_role(int(self.config["special_role_3_id"]))
+                if role not in user.roles:
+                    await user.add_roles(role)
+                    print(f"{user.name} has been assigned the role of {role.name}")
+                elif role in user.roles:
+                    await user.remove_roles(role)
+                    print(f"{user.name} has been unassigned the role of {role.name}")
+                else:
+                    print(f"An error orcurred while trying to invert {role.name}'s special role 3 role")
+
+                await ctx.message.add_reaction('\N{THUMBS UP SIGN}')
+                time.sleep(0.5)
+                await ctx.message.delete()
+    except ValueError:
+        print("Please make sure special_role_3_admin_id and special_role_3_id is a role ID or 0 to disable")
+    except:
+        print("Error loading special role 3 or/and special role 3 admin")
+
+        
 
 
     """ Commands for all roles in roles list"""
