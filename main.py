@@ -27,26 +27,29 @@ client.add_cog(MemberWatch(client, config['MemberWatch']))
 async def on_ready():
     print(f'{config["General"]["bot_name"]} has logged in as {client.user}')
 
-    # Add custom status
-    if (int(config["General"]["status"]) == 1):
-        print(f"Using status 1: Playing {config['General']['status_message']}")
-        await client.change_presence(activity=discord.Game(name=config["General"]["status_message"]))
-    elif (int(config["General"]["status"]) == 2):
-        print(f"Using status 2: Streaming {config['General']['status_message']}. Link: {config['General']['status_streaming_url']}")
-        await client.change_presence(activity=discord.Streaming(name=config["General"]["status_message"], url=config["General"]["status_streaming_url"]))
-    elif (int(config["General"]["status"]) == 3):
-        print(f"Using status 3: Watching {config['General']['status_message']}")
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=config["General"]["status_message"]))
-    elif (int(config["General"]["status"]) == 4):
-        print(f"Using status 4: Competing in {config['General']['status_message']}")
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.competing, name=config["General"]["status_message"]))
-    elif (int(config["General"]["status"]) == 5):
-        print(f"Using status 5: Listening to {config['General']['status_message']}")
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=config["General"]["status_message"]))
-
-
     DiscordComponents(client)
 
+    try:
+        # Add custom status
+        if (int(config["General"]["status"]) == 1):
+            print(f"Using status 1: Playing {config['General']['status_message']}")
+            await client.change_presence(activity=discord.Game(name=config["General"]["status_message"]))
+        elif (int(config["General"]["status"]) == 2):
+            print(f"Using status 2: Streaming {config['General']['status_message']}. Link: {config['General']['status_streaming_url']}")
+            await client.change_presence(activity=discord.Streaming(name=config["General"]["status_message"], url=config["General"]["status_streaming_url"]))
+        elif (int(config["General"]["status"]) == 3):
+            print(f"Using status 3: Watching {config['General']['status_message']}")
+            await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=config["General"]["status_message"]))
+        elif (int(config["General"]["status"]) == 4):
+            print(f"Using status 4: Competing in {config['General']['status_message']}")
+            await client.change_presence(activity=discord.Activity(type=discord.ActivityType.competing, name=config["General"]["status_message"]))
+        elif (int(config["General"]["status"]) == 5):
+            print(f"Using status 5: Listening to {config['General']['status_message']}")
+            await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=config["General"]["status_message"]))
+    except ValueError:
+        print("Error loading status. \n Make sure Status in config is a number. Set status to 0 to turn status off")
+    except:
+        print("ERROR (Non valueError) loading status")
 
 @client.command(brief="Test if bot is online")  # Command to test if bot is online
 @commands.has_role(config["General"]["manager_role"])
