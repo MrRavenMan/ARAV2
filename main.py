@@ -7,6 +7,7 @@ from discord_components import DiscordComponents
 
 from assigner import Assigner
 from member_watch import MemberWatch
+from music_player import MusicPlayer
 
 
 config = configparser.ConfigParser()
@@ -21,6 +22,7 @@ client = commands.Bot(command_prefix='!', intents=intents)
 
 client.add_cog(Assigner(client, config['Assigner']))
 client.add_cog(MemberWatch(client, config['MemberWatch']))
+client.add_cog(MusicPlayer(client))
 
 
 @client.event
@@ -29,8 +31,7 @@ async def on_ready():
 
     DiscordComponents(client)
 
-    try:
-        # Add custom status
+    try: # Add custom status
         if (int(config["General"]["status"]) == 1):
             print(f"Using status 1: Playing {config['General']['status_message']}")
             await client.change_presence(activity=discord.Game(name=config["General"]["status_message"]))
