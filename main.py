@@ -27,6 +27,11 @@ if config.getboolean("General", "enable_MemberWatch"):
     client.add_cog(MemberWatch(client, config['MemberWatch']))
 else:
     print("Member Watch: OFF")
+if config.getboolean("General", "enable_Chatter"):
+    from chatter import Chatter
+    client.add_cog(Chatter(client, config['Chatter']))
+else:
+    print("Chatter: OFF")
 if config.getboolean("General", "enable_MusicPlayer"):
     from music_player import MusicPlayer
     client.add_cog(MusicPlayer(client))

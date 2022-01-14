@@ -1,0 +1,15 @@
+{
+    "always_respond_to_role_ids": [854340374138716180, 853692936465940501],
+    "chats": [
+        {
+            "call": ["good morning", "morning", "morning!"],
+            "response": ["good morning dude!", "good morning {user_mention}", "fuck off!"],
+            "probability": 0.5
+        },
+        {
+            "call": ["good night"],
+            "response": ["night dude!", "fuck off {user_mention}. You do not belong in **{server_mention}**"],
+            "probability": 1
+        }
+    ]
+}
