@@ -5,10 +5,6 @@ import time
 from discord.ext import commands
 from discord_components import DiscordComponents
 
-from assigner import Assigner
-from member_watch import MemberWatch
-from music_player import MusicPlayer
-
 
 config = configparser.ConfigParser()
 config.read("conf/config.ini")
@@ -20,9 +16,22 @@ TOKEN = config["General"]["TOKEN"]
 
 client = commands.Bot(command_prefix='!', intents=intents)
 
-client.add_cog(Assigner(client, config['Assigner']))
-client.add_cog(MemberWatch(client, config['MemberWatch']))
-client.add_cog(MusicPlayer(client))
+# Start modules as specified in config
+if config.getboolean("General", "enable_Assigner"):
+    from assigner import Assigner
+    client.add_cog(Assigner(client, config['Assigner']))
+else:
+    print("Assigner: OFF")
+if config.getboolean("General", "enable_MemberWatch"):
+    from member_watch import MemberWatch
+    client.add_cog(MemberWatch(client, config['MemberWatch']))
+else:
+    print("Member Watch: OFF")
+if config.getboolean("General", "enable_MusicPlayer"):
+    from music_player import MusicPlayer
+    client.add_cog(MusicPlayer(client))
+else:
+    print("Music Player: OFF")
 
 
 @client.event

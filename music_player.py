@@ -5,6 +5,7 @@ import configparser
 import discord 
 from discord.ext import commands
 from discord import FFmpegPCMAudio
+from discord.ext.commands import Cog
 
 from youtube_dl import YoutubeDL
 
@@ -19,6 +20,11 @@ class MusicPlayer(commands.Cog):
         self.bot = bot
 
         self.song_queue = []
+
+
+    @Cog.listener()
+    async def on_ready(self):
+        print("Music Player: ON")
 
 
     async def check_queue(self, ctx):
