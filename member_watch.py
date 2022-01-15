@@ -65,7 +65,7 @@ class MemberWatch(Cog):
                         await message.delete()
 
                         await self.bot.get_channel(int(self.config["blacklist_msg_channel_id"])) \
-                            .send(f'**{messageAuthor.mention}** used a blacklisted word. He said: **"{message.content}"**')
+                            .send(f'**{messageAuthor.mention}** used a blacklisted word. They said: **"{message.content}"**')
 
                         if self.config["kick_on_blacklist"] == "True":
                             try:
