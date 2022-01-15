@@ -18,7 +18,7 @@ class MemberWatch(Cog):
 
         self.blacklist = []
         for word in dirty_blacklist: # Clean blacklist so all words are lowercase str
-            self.blacklist.append(str(word.lower()))
+            self.blacklist.append(str(word.lower().replace("@", "add_")))
 
 
     @Cog.listener()
@@ -51,7 +51,7 @@ class MemberWatch(Cog):
 
     
     def msg_contains_word(self, msg, word):
-        msg = msg.replace("@", "")
+        msg = msg.replace("@", "add_")
         return re.search(fr'\b({word})\b', msg) is not None # returns True if bad word is in message
 
     @Cog.listener()
