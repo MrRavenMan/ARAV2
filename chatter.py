@@ -36,6 +36,7 @@ class Chatter(Cog):
     @Cog.listener()
     async def on_message(self, message):
         messageAuthor = message.author
+        
         if message.content.lower() in self.calls:
             idx = self.calls.index(message.content.lower())
             chat_idx = self.calls_map[idx]

@@ -51,6 +51,7 @@ class MemberWatch(Cog):
 
     
     def msg_contains_word(self, msg, word):
+        msg = msg.replace("@", "")
         return re.search(fr'\b({word})\b', msg) is not None # returns True if bad word is in message
 
     @Cog.listener()
