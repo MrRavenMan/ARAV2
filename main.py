@@ -5,9 +5,6 @@ import time
 from discord.ext import commands
 from discord_components import DiscordComponents
 
-from assigner import Assigner
-from member_watch import MemberWatch
-
 
 config = configparser.ConfigParser()
 config.read("conf/config.ini")
@@ -19,8 +16,27 @@ TOKEN = config["General"]["TOKEN"]
 
 client = commands.Bot(command_prefix='!', intents=intents)
 
-client.add_cog(Assigner(client, config['Assigner']))
-client.add_cog(MemberWatch(client, config['MemberWatch']))
+# Start modules as specified in config
+if config.getboolean("General", "enable_Assigner"):
+    from assigner import Assigner
+    client.add_cog(Assigner(client, config['Assigner']))
+else:
+    print("Assigner: OFF")
+if config.getboolean("General", "enable_MemberWatch"):
+    from member_watch import MemberWatch
+    client.add_cog(MemberWatch(client, config['MemberWatch']))
+else:
+    print("Member Watch: OFF")
+if config.getboolean("General", "enable_Chatter"):
+    from chatter import Chatter
+    client.add_cog(Chatter(client, config['Chatter']))
+else:
+    print("Chatter: OFF")
+if config.getboolean("General", "enable_MusicPlayer"):
+    from music_player import MusicPlayer
+    client.add_cog(MusicPlayer(client))
+else:
+    print("Music Player: OFF")
 
 
 @client.event
@@ -29,8 +45,7 @@ async def on_ready():
 
     DiscordComponents(client)
 
-    try:
-        # Add custom status
+    try: # Add custom status
         if (int(config["General"]["status"]) == 1):
             print(f"Using status 1: Playing {config['General']['status_message']}")
             await client.change_presence(activity=discord.Game(name=config["General"]["status_message"]))

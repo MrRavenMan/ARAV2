@@ -20,10 +20,10 @@ class Assigner(commands.Cog):
         self.config = config
         self.btns_on = True # If true, buttons are already activated
 
-        with open('conf/roles.json') as json_file:
+        with open('conf/Assigner_conf/roles.json') as json_file:
             self.roles = json.load(json_file)
 
-        with open ("conf/role_btn_msg.txt", "r") as myfile:
+        with open ("conf/Assigner_conf/role_btn_msg.txt", "r") as myfile:
             data=myfile.readlines()
         self.role_btn_msg = ""
         for i in data:
@@ -32,6 +32,8 @@ class Assigner(commands.Cog):
 
     @commands.Cog.listener()  
     async def on_ready(self): # Function that runs on startup
+        print("Assigner: ON")
+
         for x in range(1, 21): # Remove unused role commands on startup
             if self.roles[f"Role{x}"]["active"] is False:
                 self.bot.remove_command(f"role{x}")
@@ -52,9 +54,9 @@ class Assigner(commands.Cog):
 
     @commands.command(brief="Post introduction message for role buttons")
     @commands.has_role(owner)
-    async def role_intro_text(self, ctx): # Send introduction message derived from conf/role_intro.txt {faq_channel_id} mention available
+    async def role_intro_text(self, ctx): # Send introduction message derived from conf/Assigner_conf/role_intro.txt {faq_channel_id} mention available
         if self.config["role_introduction"] == "True":
-            with open ("conf/role_intro.txt", "r") as myfile:
+            with open ("conf/Assigner_conf/role_intro.txt", "r") as myfile:
                 data=myfile.readlines()
 
             text = ""
@@ -65,7 +67,7 @@ class Assigner(commands.Cog):
 
     @commands.command(brief="Post introduction picture for role buttons")
     @commands.has_role(owner)
-    async def role_intro_pic(self, ctx): # Send introduction picture. Path derived from conf/config.ini --> role_introduction_picture
+    async def role_intro_pic(self, ctx): # Send introduction picture. Path derived from conf/Assigner_conf/config.ini --> role_introduction_picture
         if self.config["role_introduction"] == "True":
             await ctx.send(file=File(self.config["role_introduction_picture"]))
             await ctx.message.delete()
@@ -77,7 +79,7 @@ class Assigner(commands.Cog):
         join = Button(style=ButtonStyle.blue, label="Assign All Roles", id="e_all_join")
         leave = Button(style=ButtonStyle.red, label="Unassign All Roles", id="e_all_leave")
 
-        with open ("conf/role_all.txt", "r") as myfile:
+        with open ("conf/Assigner_conf/role_all.txt", "r") as myfile:
             data=myfile.readlines()
         role_all_msg = ""
         for i in data:
