@@ -64,6 +64,8 @@ class MemberWatch(Cog):
                     if self.msg_contains_word(message.content.lower(), bannedWord):
                         await message.delete()
 
+                        message.content = message.content.replace("@", "*@*") # Make sure bot doesn't tag everyone when sending admins blacklist msg
+
                         await self.bot.get_channel(int(self.config["blacklist_msg_channel_id"])) \
                             .send(f'**{messageAuthor.mention}** used a blacklisted word in {message.channel.mention}. They said: **"{message.content}"**')
 
@@ -72,7 +74,7 @@ class MemberWatch(Cog):
                                 await message.guild.kick(messageAuthor)
                                 await self.bot.get_channel(int(self.config["blacklist_msg_channel_id"])) \
                                     .send(f'**{messageAuthor.mention}** is now kicked')
-                                print(f"Kicked userid {messageAuthor.id} for writing blacklisted word. He said: '{message.content}' ")
+                                print(f'Kicked userid {messageAuthor.id} for writing blacklisted word in {message.channel.mention}. They said: **"{message.content}"**')
                             except MissingPermissions:
                                 print("BOT is lacking permission to kick members")
                             
