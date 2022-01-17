@@ -10,6 +10,13 @@
             "call": ["good night"],
             "response": ["Night dude!", "Fuck off {user_mention}. You do not belong in **{server_mention}**"],
             "probability": 0.1
+        },
+        {
+            "call": ["Roll a dice"],
+            "response": ["You got {result}", "I rolled a dice with numbers between {min} and {max}. I got {result}"],
+            "probability": 0.8,
+            "min": 1,
+            "max": 9
         }
     ]
 }
