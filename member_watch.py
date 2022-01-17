@@ -67,14 +67,14 @@ class MemberWatch(Cog):
                         message.content = message.content.replace("@", "*@*") # Make sure bot doesn't tag everyone when sending admins blacklist msg
 
                         await self.bot.get_channel(int(self.config["blacklist_msg_channel_id"])) \
-                            .send(f'**{messageAuthor.mention}** used a blacklisted word in {message.channel.mention}. They said: **"{message.content}"**')
+                            .send(f'{messageAuthor.mention} used a blacklisted word in {message.channel.mention}. They said: "{message.content}"')
 
                         if self.config["kick_on_blacklist"] == "True":
                             try:
                                 await message.guild.kick(messageAuthor)
                                 await self.bot.get_channel(int(self.config["blacklist_msg_channel_id"])) \
                                     .send(f'**{messageAuthor.mention}** is now kicked')
-                                print(f'Kicked userid {messageAuthor.id} for writing blacklisted word in {message.channel.mention}. They said: **"{message.content}"**')
+                                print(f'Kicked userid {messageAuthor.id} for writing blacklisted word in {message.channel.mention}. They said: "{message.content}"')
                             except MissingPermissions:
                                 print("BOT is lacking permission to kick members")
                             
