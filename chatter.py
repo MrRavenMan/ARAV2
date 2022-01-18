@@ -76,7 +76,7 @@ class Chatter(Cog):
                     return
                 
             response = random.choice(self.chats[chat_idx]["response"])
-            if self.chats[chat_idx]["min"] and  self.chats[chat_idx]["max"]:
+            if "min" in self.chats[chat_idx] and "max" in self.chats[chat_idx]:
                 _min = self.chats[chat_idx]["min"]
                 _max = self.chats[chat_idx]["max"]
                 result = random.randint(_min, _max)
